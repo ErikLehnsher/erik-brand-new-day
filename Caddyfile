@@ -1,8 +1,8 @@
 {
-    email {$ACME_EMAIL}
+    auto_https off
 }
 
-snakersdoo.io.vn {
+:80 {
     encode zstd gzip
 
     @api path /api/*

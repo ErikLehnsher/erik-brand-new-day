@@ -50,11 +50,8 @@ services:
     image: caddy:2.8-alpine
     container_name: brand-new-day-gateway
     restart: unless-stopped
-    environment:
-      ACME_EMAIL: ${ACME_EMAIL}
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:18080:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
