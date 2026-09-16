@@ -47,6 +47,9 @@
 - FE now includes a shared header menu plus dedicated `/about`, `/login`, `/register`, and `/logout` routes with auth-screen layout and client-side submit flow.
 - `/login` and `/register` are wired to the shared `AuthForm` client component, and successful auth stores a local session so the header can switch into user mode.
 - The header now shows the signed-in user name and a dropdown with user detail actions when a local session exists.
+- The user dropdown now exposes a proper `Logout` action rather than a generic session-clear label.
+- The header is being moved toward a Threads-style top bar with the sidebar actions collapsed into the top navigation, a `+ New post` shortcut, and a light/dark theme toggle.
+- The visual system has been pushed toward a cleaner Threads-like black/white theme with less saturated color, while keeping the brand mascots and editorial feel.
 - The homepage has been converted from the old landing copy into a blog-first post feed, while the original landing content moved into `/about`.
 - A `/posts/new` screen now lets a signed-in user create a new post and jump straight to the new post detail page.
 - The create-post screen now uses a Tiptap-based Notion-like editor with slash commands, inline image upload, font selection, text color controls, and block formatting.
@@ -54,6 +57,8 @@
 - The create-post editor body has been widened and expanded so it feels closer to a true Notion-style writing surface rather than a narrow form.
 - The create-post screen has now been reworked into a single-column document canvas so the page reads more like a Notion editor and less like a split metadata form.
 - Slash-command selection on the create-post editor now applies block formatting immediately, supports Enter-to-select, and images are constrained to the editor width so they stay inside the document canvas.
+- The create-post surface has been softened further so borders fade into the red vintage background, and the slug/title/status/font controls now sit in a tighter two-column arrangement like a Notion property bar.
+- The post slug now auto-generates from the title, the visible slug field has been removed, and the title is now the main page heading like a Notion document title.
 - FastAPI must allow CORS from local FE origins (`localhost:3000` and `127.0.0.1:3000`) so browser auth requests do not fail.
 - FE visual direction now leans vintage Wes Anderson with a red-dominant background, plus gold and brown accents.
 - FE accent direction now gives red the main role, with cat/dog mascot cutouts inspired by the provided reference and placed directly into the UI.
@@ -172,8 +177,10 @@ Secrets must not be committed. Provide `.env.example` and a correct `.gitignore`
 
 - Local development should use a regular PostgreSQL installation.
 - A future private server should be able to deploy by cloning the repository and running documented Docker commands.
-- SSH, production Docker configuration, domain, HTTPS, backups, and CI/CD still need to be designed.
-- Do not provision or deploy a production server until the target machine/provider and security requirements are confirmed.
+- Production Docker configuration now exists in `docker-compose.production.yml` for a Windows Docker host, with PostgreSQL, FastAPI, Next.js, and Caddy.
+- The initial production domain is `snakersdoo.io.vn`; Caddy owns public HTTP/HTTPS when ports 80/443 are available.
+- Friday Agent is a separate private service on the same server. Telegram remains a test transport, and no Friday admin/dashboard or agent workspace is exposed through the public web domain.
+- A future authenticated backend bridge will connect Brand New Day accounts to isolated Friday workspaces. It must not use a direct browser-to-agent connection.
 
 ## Current repository state
 

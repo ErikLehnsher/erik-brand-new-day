@@ -1,6 +1,7 @@
 .DS_Store
 .env.local
 .env
+.env.production
 .venv
 .vscode
 __pycache__/

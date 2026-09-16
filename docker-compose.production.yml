@@ -1,0 +1,73 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: brand-new-day-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ${POSTGRES_DATA_DIR:-D:/ErikBrandNewDayData/postgres}:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [friday-platform]
+
+  backend:
+    build: ./BE
+    container_name: brand-new-day-backend
+    restart: unless-stopped
+    env_file: .env.production
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      API_HOST: 0.0.0.0
+      API_PORT: "8000"
+      CORS_ORIGINS: https://snakersdoo.io.vn
+    depends_on:
+      database:
+        condition: service_healthy
+    networks: [friday-platform]
+
+  frontend:
+    build:
+      context: ./FE
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /api
+    container_name: brand-new-day-frontend
+    restart: unless-stopped
+    environment:
+      INTERNAL_API_BASE_URL: http://backend:8000
+    depends_on:
+      - backend
+    networks: [friday-platform]
+
+  gateway:
+    image: caddy:2.8-alpine
+    container_name: brand-new-day-gateway
+    restart: unless-stopped
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+    networks: [friday-platform]
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  friday-platform:
+    name: friday-platform
+    external: true
