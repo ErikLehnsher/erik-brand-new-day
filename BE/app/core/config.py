@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     api_port: int = 8000
     secret_key: str = "change-me-in-production"
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    friday_bridge_url: str = ""
+    friday_bridge_token: str = ""
+    friday_bridge_timeout_seconds: int = 300
 
     @property
     def cors_origin_list(self) -> list[str]:

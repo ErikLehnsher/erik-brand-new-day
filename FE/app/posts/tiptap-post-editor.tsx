@@ -47,6 +47,14 @@ function getPlainText(editor: ReturnType<typeof useEditor> extends infer T ? T :
   return editor?.getText({ blockSeparator: "\n" }).trim() ?? "";
 }
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 48);
+}
+
 export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublish, loading, error, setError }: Props) {
   const [slug, setSlug] = useState(initialSlug);
   const [title, setTitle] = useState(initialTitle);
@@ -102,18 +110,6 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
     },
     onUpdate({ editor }) {
       const text = editor.getText({ blockSeparator: "\n" }).trim();
-      if (!title && text) {
-        setTitle(text.slice(0, 80));
-      }
-      if (!slug && text) {
-        setSlug(
-          text
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "")
-            .slice(0, 48)
-        );
-      }
       setError(null);
     },
     onSelectionUpdate({ editor }) {
@@ -132,7 +128,7 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
 
   const filteredCommands = useMemo(() => {
     const q = slashQuery.toLowerCase();
-    return SLASH_COMMANDS.filter((item) => item.label.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q));
+      return SLASH_COMMANDS.filter((item) => item.label.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q));
   }, [slashQuery]);
 
   const insertImage = useCallback(() => {
@@ -216,11 +212,19 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
         }}
       >
         <div className="post-editor-intro">
-          <p className="eyebrow">Write post</p>
-          <h1 className="title">Create a post like Notion.</h1>
-          <p className="subtitle">
-            Write freely in blocks. Type <strong>/</strong> for commands, add images inline, and style text with font and color.
-          </p>
+          <p className="eyebrow">Post editor</p>
+          <input
+            className="post-title-input"
+            value={title}
+            onChange={(event) => {
+              const nextTitle = event.target.value;
+              setTitle(nextTitle);
+              setSlug(slugify(nextTitle));
+            }}
+            placeholder="Untitled"
+            aria-label="Post title"
+            autoComplete="off"
+          />
           <div className="editor-toolbar">
             <button type="button" className="secondary-button" onClick={() => editor?.chain().focus().toggleBold().run()}>
               Bold
@@ -245,31 +249,13 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
             </button>
           </div>
           <div className="editor-hint">
-            Slash menu supports quick blocks. This is the right base for a Notion-style writing flow.
+            Type <strong>/</strong> for blocks, and keep writing in the canvas below.
           </div>
         </div>
 
         <div className="post-meta-grid">
-          <label className="field">
-            <span>Slug</span>
-            <input value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="my-new-post" required minLength={3} />
-          </label>
-
-          <label className="field">
-            <span>Title</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="A new story" required minLength={3} />
-          </label>
-
-          <label className="field">
-            <span>Status</span>
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </label>
-
           <div className="editor-style-row">
-            <label className="field">
+            <label className="field field-inline">
               <span>Font</span>
               <select value={fontFamily} onChange={(event) => setFontFamily(event.target.value)}>
                 {FONT_OPTIONS.map((font) => (
@@ -280,7 +266,7 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
               </select>
             </label>
 
-            <label className="field">
+            <label className="field field-inline">
               <span>Color</span>
               <select value={color} onChange={(event) => setColor(event.target.value)}>
                 {COLOR_OPTIONS.map((item) => (
@@ -291,6 +277,14 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
               </select>
             </label>
           </div>
+
+          <label className="field field-inline field-inline-status">
+            <span>Status</span>
+            <select value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+          </label>
         </div>
 
         <input ref={fileInputRef} hidden type="file" accept="image/*" onChange={(event) => void handleImageFile(event.target.files?.[0] ?? null)} />

@@ -95,3 +95,39 @@ bridge that maps a signed-in Brand New Day user to one isolated Friday workspace
 It must never expose the Telegram token, Claude/Codex credentials, raw session
 folders, or the Friday admin dashboard to the browser. That bridge is the next
 feature, not a reverse-proxy shortcut.
+
+The initial bridge is now implemented. A signed-in user can open `/friday`; the
+browser sends its normal Bearer token to `POST /api/agent/chat`, the FastAPI
+backend validates that token, and only then calls the private `friday-bridge`
+container over Docker networking. The bridge uses an additional shared secret
+and creates a separate workspace per website account.
+
+Before starting either stack, set the exact same long random value in both
+environment files:
+
+```dotenv
+# D:\Apps\friday_agent\.env
+FRIDAY_BRIDGE_TOKEN=<one-long-random-secret>
+
+# D:\Apps\erik-brand-new-day\.env.production
+FRIDAY_BRIDGE_TOKEN=<the-exact-same-secret>
+```
+
+Start/update Friday first, including the new private bridge service:
+
+```powershell
+cd D:\Apps\friday_agent
+git pull --ff-only
+docker compose up -d --build friday-bot friday-bridge
+```
+
+Then update the social stack:
+
+```powershell
+cd D:\Apps\erik-brand-new-day
+git pull --ff-only
+docker compose -f docker-compose.production.yml up -d --build
+```
+
+`friday-bridge` must not have a `ports:` entry. It remains reachable only as
+`http://friday-bridge:8780` from the FastAPI container on `friday-platform`.

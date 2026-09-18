@@ -14,13 +14,13 @@ const guestNavItems = [
 const memberNavItems = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/posts/new", label: "New post" },
-  { href: "/logout", label: "Logout" }
+  { href: "/friday", label: "Friday" }
 ];
 
 export function Header() {
   const [session, setSessionState] = useState<SessionState | null>(null);
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("dark");
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -28,6 +28,18 @@ export function Header() {
     sync();
     return onSessionChange(sync);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const storedTheme = window.localStorage.getItem("erbnd.theme");
+    const nextTheme = storedTheme === "light" ? "light" : "dark";
+    setTheme(nextTheme);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("erbnd.theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const onClickOutside = (event: MouseEvent) => {
@@ -64,6 +76,20 @@ export function Header() {
               {item.label}
             </a>
           ))}
+          {session ? (
+            <a href="/posts/new" className="site-nav-add" aria-label="Create new post">
+              <span aria-hidden="true">+</span>
+              <span>New post</span>
+            </a>
+          ) : null}
+          <button
+            type="button"
+            className="site-theme-toggle"
+            onClick={() => setTheme((value) => (value === "dark" ? "light" : "dark"))}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? "◐" : "◑"}
+          </button>
         </nav>
 
         {session ? (
@@ -80,7 +106,6 @@ export function Header() {
                 </div>
                 <a href="/posts/new" role="menuitem">New post</a>
                 <a href="/about" role="menuitem">About profile</a>
-                <a href="/logout" role="menuitem">Log out</a>
                 <button
                   type="button"
                   onClick={() => {
@@ -89,7 +114,7 @@ export function Header() {
                     window.location.href = "/";
                   }}
                 >
-                  Clear session
+                  Logout
                 </button>
               </div>
             ) : null}

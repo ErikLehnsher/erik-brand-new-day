@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from jose import jwt
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from app.core.config import get_settings
@@ -31,6 +31,17 @@ def create_token(payload: dict[str, Any], expires_delta: timedelta) -> str:
 
 def create_access_token(subject: str) -> str:
     return create_token({"sub": subject, "type": "access"}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+
+
+def decode_access_token(token: str) -> str | None:
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=[ALGORITHM])
+    except JWTError:
+        return None
+    subject = payload.get("sub")
+    if payload.get("type") != "access" or not isinstance(subject, str) or not subject:
+        return None
+    return subject
 
 
 def create_reset_token(subject: str) -> str:

@@ -28,6 +28,9 @@ services:
       API_HOST: 0.0.0.0
       API_PORT: "8000"
       CORS_ORIGINS: https://snakersdoo.io.vn
+      FRIDAY_BRIDGE_URL: http://friday-bridge:8780
+      FRIDAY_BRIDGE_TOKEN: ${FRIDAY_BRIDGE_TOKEN}
+      FRIDAY_BRIDGE_TIMEOUT_SECONDS: "300"
     depends_on:
       database:
         condition: service_healthy
