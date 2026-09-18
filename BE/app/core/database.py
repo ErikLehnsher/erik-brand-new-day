@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -20,6 +20,21 @@ def init_db() -> None:
 
     Base.metadata.create_all(bind=engine)
     _ = User, PasswordResetToken, Post
+    # Keep the existing production table compatible when publication metadata
+    # is introduced after the first deployment.
+    with engine.begin() as connection:
+        connection.execute(
+            text(
+                "ALTER TABLE posts ADD COLUMN IF NOT EXISTS category "
+                "VARCHAR(40) NOT NULL DEFAULT 'daily'"
+            )
+        )
+        connection.execute(
+            text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS cover_image_url TEXT")
+        )
+        connection.execute(
+            text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS video_url TEXT")
+        )
 
     with SessionLocal() as db:
         if db.scalar(select(Post.id)):

@@ -37,7 +37,16 @@ type ActionType = (typeof SLASH_COMMANDS)[number]["action"];
 type Props = {
   initialSlug?: string;
   initialTitle?: string;
-  onPublish: (payload: { slug: string; title: string; excerpt: string; content: string; status: string }) => Promise<void>;
+  onPublish: (payload: {
+    slug: string;
+    title: string;
+    excerpt: string;
+    content: string;
+    status: string;
+    category: string;
+    cover_image_url: string;
+    video_url: string;
+  }) => Promise<void>;
   loading: boolean;
   error: string | null;
   setError: (value: string | null) => void;
@@ -59,6 +68,9 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
   const [slug, setSlug] = useState(initialSlug);
   const [title, setTitle] = useState(initialTitle);
   const [status, setStatus] = useState("draft");
+  const [category, setCategory] = useState("daily");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [color, setColor] = useState(COLOR_OPTIONS[0].value);
   const [fontFamily, setFontFamily] = useState(FONT_OPTIONS[0].value);
   const [slashOpen, setSlashOpen] = useState(false);
@@ -177,9 +189,12 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
       title: title.trim(),
       excerpt: getPlainText(editor).slice(0, 180),
       content: JSON.stringify(editor.getJSON()),
-      status
+      status,
+      category,
+      cover_image_url: coverImageUrl.trim(),
+      video_url: videoUrl.trim()
     });
-  }, [editor, onPublish, slug, title, status]);
+  }, [category, coverImageUrl, editor, onPublish, slug, status, title, videoUrl]);
 
   useEffect(() => {
     if (!editor) return;
@@ -253,8 +268,17 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
           </div>
         </div>
 
-        <div className="post-meta-grid">
-          <div className="editor-style-row">
+          <div className="post-meta-grid">
+            <label className="field field-inline field-inline-status">
+              <span>Topic</span>
+              <select value={category} onChange={(event) => setCategory(event.target.value)}>
+                <option value="daily">Daily notes</option>
+                <option value="odoo">Odoo</option>
+                <option value="technology">Technology</option>
+                <option value="video">Video</option>
+              </select>
+            </label>
+            <div className="editor-style-row">
             <label className="field field-inline">
               <span>Font</span>
               <select value={fontFamily} onChange={(event) => setFontFamily(event.target.value)}>
@@ -278,14 +302,35 @@ export function TiptapPostEditor({ initialSlug = "", initialTitle = "", onPublis
             </label>
           </div>
 
-          <label className="field field-inline field-inline-status">
+            <label className="field field-inline field-inline-status">
             <span>Status</span>
             <select value={status} onChange={(event) => setStatus(event.target.value)}>
               <option value="draft">Draft</option>
               <option value="published">Published</option>
             </select>
-          </label>
-        </div>
+            </label>
+          </div>
+
+          <div className="post-media-grid">
+            <label className="field">
+              <span>Cover image URL</span>
+              <input
+                value={coverImageUrl}
+                onChange={(event) => setCoverImageUrl(event.target.value)}
+                placeholder="https://… (optional)"
+                type="url"
+              />
+            </label>
+            <label className="field">
+              <span>Video URL</span>
+              <input
+                value={videoUrl}
+                onChange={(event) => setVideoUrl(event.target.value)}
+                placeholder="YouTube, Vimeo, or direct .mp4 (optional)"
+                type="url"
+              />
+            </label>
+          </div>
 
         <input ref={fileInputRef} hidden type="file" accept="image/*" onChange={(event) => void handleImageFile(event.target.files?.[0] ?? null)} />
 

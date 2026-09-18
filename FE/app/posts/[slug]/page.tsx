@@ -18,6 +18,9 @@ type PostDetail = {
   slug: string;
   title: string;
   excerpt: string;
+  category: string;
+  cover_image_url: string | null;
+  video_url: string | null;
   content: string;
   status: string;
   published_at: string | null;
@@ -120,6 +123,31 @@ function renderChildren(nodes?: TipTapNode[]) {
   return nodes.map((node, index) => renderNode(node, `${node.type}-${index}`));
 }
 
+function videoEmbed(url: string | null): React.ReactNode {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") {
+      return <iframe src={`https://www.youtube.com/embed/${parsed.pathname.slice(1)}`} title="Embedded video" allowFullScreen />;
+    }
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      const id = parsed.searchParams.get("v") ?? parsed.pathname.split("/").filter(Boolean).pop();
+      return id ? <iframe src={`https://www.youtube.com/embed/${id}`} title="Embedded video" allowFullScreen /> : null;
+    }
+    if (host === "vimeo.com") {
+      const id = parsed.pathname.split("/").filter(Boolean).pop();
+      return id ? <iframe src={`https://player.vimeo.com/video/${id}`} title="Embedded video" allowFullScreen /> : null;
+    }
+    if (parsed.protocol === "https:" && /\.(mp4|webm|ogg)$/i.test(parsed.pathname)) {
+      return <video controls preload="metadata" src={url} />;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPost(slug);
@@ -142,8 +170,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
 
   return (
     <main className="page">
-      <article className="hero post-detail">
-        <p className="eyebrow">Published post</p>
+      <article className="hero post-detail post-detail-publication">
+        <p className="eyebrow">{post.category}</p>
         <h1 className="title">{post.title}</h1>
         <p className="subtitle">{post.excerpt}</p>
         <div className="post-detail-meta">
@@ -158,6 +186,12 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
               : "Draft"}
           </span>
         </div>
+        {post.cover_image_url ? (
+          <img className="post-cover-image" src={post.cover_image_url} alt="" />
+        ) : null}
+        {post.video_url && videoEmbed(post.video_url) ? (
+          <div className="post-video-frame">{videoEmbed(post.video_url)}</div>
+        ) : null}
         <div className="post-body">
           {parsed?.length
             ? renderChildren(parsed)

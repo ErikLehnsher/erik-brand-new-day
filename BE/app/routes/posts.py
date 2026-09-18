@@ -17,6 +17,9 @@ def to_summary(post: Post) -> PostSummary:
         slug=post.slug,
         title=post.title,
         excerpt=post.excerpt,
+        category=post.category,
+        cover_image_url=post.cover_image_url,
+        video_url=post.video_url,
         published_at=post.published_at,
         created_at=post.created_at,
     )
@@ -54,6 +57,9 @@ def create_post(payload: CreatePostRequest, db: Session = Depends(get_db)) -> Po
         title=payload.title,
         excerpt=payload.excerpt,
         content=payload.content,
+        category=payload.category,
+        cover_image_url=payload.cover_image_url.strip() if payload.cover_image_url else None,
+        video_url=payload.video_url.strip() if payload.video_url else None,
         status=payload.status,
         published_at=now if payload.status == "published" else None,
     )

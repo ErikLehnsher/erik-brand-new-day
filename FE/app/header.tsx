@@ -6,6 +6,10 @@ import { clearSession, getSession, onSessionChange, SessionState } from "./sessi
 
 const guestNavItems = [
   { href: "/", label: "Home" },
+  { href: "/#daily", label: "Daily" },
+  { href: "/#odoo", label: "Odoo" },
+  { href: "/#technology", label: "Tech" },
+  { href: "/#video", label: "Video" },
   { href: "/about", label: "About" },
   { href: "/login", label: "Login" },
   { href: "/register", label: "Register" }
@@ -13,6 +17,10 @@ const guestNavItems = [
 
 const memberNavItems = [
   { href: "/", label: "Home" },
+  { href: "/#daily", label: "Daily" },
+  { href: "/#odoo", label: "Odoo" },
+  { href: "/#technology", label: "Tech" },
+  { href: "/#video", label: "Video" },
   { href: "/about", label: "About" },
   { href: "/friday", label: "Friday" }
 ];
