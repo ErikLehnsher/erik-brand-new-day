@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.dependencies import get_db
+from app.core.dependencies import get_current_user, get_db
 from app.models.post import Post
+from app.models.user import User
 from app.schemas.post import CreatePostRequest, PostDetail, PostSummary
 
 router = APIRouter(prefix="/posts", tags=["posts"])
@@ -46,7 +47,11 @@ def get_post(slug: str, db: Session = Depends(get_db)) -> PostDetail:
 
 
 @router.post("", response_model=PostDetail, status_code=status.HTTP_201_CREATED)
-def create_post(payload: CreatePostRequest, db: Session = Depends(get_db)) -> PostDetail:
+def create_post(
+    payload: CreatePostRequest,
+    db: Session = Depends(get_db),
+    _current_user: User = Depends(get_current_user),
+) -> PostDetail:
     existing = db.scalar(select(Post).where(Post.slug == payload.slug))
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Slug already exists")

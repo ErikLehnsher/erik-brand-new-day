@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ReviewPanel, type Review } from "../review-panel";
 
 type TipTapMark = {
   type: string;
@@ -29,6 +30,8 @@ type PostDetail = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
 
+type ReviewSummary = { count: number; average_rating: number | null; reviews: Review[] };
+
 async function getPost(slug: string): Promise<PostDetail | null> {
   try {
     const response = await fetch(`${API_BASE}/posts/${slug}`, { cache: "no-store" });
@@ -39,6 +42,14 @@ async function getPost(slug: string): Promise<PostDetail | null> {
   } catch {
     return null;
   }
+}
+
+async function getReviews(slug: string): Promise<ReviewSummary> {
+  try {
+    const response = await fetch(`${API_BASE}/posts/${slug}/reviews`, { cache: "no-store" });
+    if (response.ok) return await response.json() as ReviewSummary;
+  } catch { /* Reviews should never prevent the story from rendering. */ }
+  return { count: 0, average_rating: null, reviews: [] };
 }
 
 function parsePostContent(content: string): TipTapNode[] | null {
@@ -152,6 +163,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPost(slug);
   const parsed = post ? parsePostContent(post.content) : null;
+  const reviews = post ? await getReviews(slug) : { count: 0, average_rating: null, reviews: [] };
 
   if (!post) {
     return (
@@ -205,6 +217,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           Back to posts
         </Link>
       </article>
+      <ReviewPanel slug={slug} initial={reviews} />
     </main>
   );
 }

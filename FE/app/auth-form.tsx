@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { setSession } from "./session";
 
 type AuthMode = "login" | "register";
@@ -13,6 +13,12 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [nextPath, setNextPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    const requestedDestination = new URLSearchParams(window.location.search).get("next");
+    setNextPath(requestedDestination?.startsWith("/") ? requestedDestination : null);
+  }, []);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -39,7 +45,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       }
 
       setSession({ accessToken: data.access_token, user: data.user });
-      router.push("/");
+      const destination = nextPath ?? "/posts/new";
+      router.replace(destination);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown auth error");
@@ -96,7 +103,10 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             Continue with Google
           </button>
 
-          <a className="text-link" href={mode === "login" ? "/register" : "/login"}>
+          <a
+            className="text-link"
+            href={`${mode === "login" ? "/register" : "/login"}${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ""}`}
+          >
             {mode === "login" ? "Need an account? Register" : "Already have an account? Login"}
           </a>
         </form>

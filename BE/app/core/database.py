@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import select, text
+from sqlalchemy import inspect, select, text
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -16,25 +16,23 @@ Base = declarative_base()
 def init_db() -> None:
     from app.models.post import Post
     from app.models.reset_token import PasswordResetToken
+    from app.models.review import Review
     from app.models.user import User
 
     Base.metadata.create_all(bind=engine)
-    _ = User, PasswordResetToken, Post
+    _ = User, PasswordResetToken, Post, Review
     # Keep the existing production table compatible when publication metadata
     # is introduced after the first deployment.
+    existing_columns = {column["name"] for column in inspect(engine).get_columns("posts")}
+    migrations = {
+        "category": "VARCHAR(40) NOT NULL DEFAULT 'daily'",
+        "cover_image_url": "TEXT",
+        "video_url": "TEXT",
+    }
     with engine.begin() as connection:
-        connection.execute(
-            text(
-                "ALTER TABLE posts ADD COLUMN IF NOT EXISTS category "
-                "VARCHAR(40) NOT NULL DEFAULT 'daily'"
-            )
-        )
-        connection.execute(
-            text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS cover_image_url TEXT")
-        )
-        connection.execute(
-            text("ALTER TABLE posts ADD COLUMN IF NOT EXISTS video_url TEXT")
-        )
+        for column, definition in migrations.items():
+            if column not in existing_columns:
+                connection.execute(text(f"ALTER TABLE posts ADD COLUMN {column} {definition}"))
 
     with SessionLocal() as db:
         if db.scalar(select(Post.id)):

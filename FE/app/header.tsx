@@ -11,6 +11,7 @@ const guestNavItems = [
   { href: "/#technology", label: "Tech" },
   { href: "/#video", label: "Video" },
   { href: "/about", label: "About" },
+  { href: "/posts/new", label: "Write" },
   { href: "/login", label: "Login" },
   { href: "/register", label: "Register" }
 ];

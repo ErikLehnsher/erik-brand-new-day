@@ -6,6 +6,7 @@ from app.core.config import get_settings
 from app.routes.agent import router as agent_router
 from app.routes.auth import router as auth_router
 from app.routes.posts import router as posts_router
+from app.routes.reviews import router as reviews_router
 
 settings = get_settings()
 app = FastAPI(title="Erik Brand New Day")
@@ -19,6 +20,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(agent_router)
 app.include_router(posts_router)
+app.include_router(reviews_router)
 
 
 @app.on_event("startup")
