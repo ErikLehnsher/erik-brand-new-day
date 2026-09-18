@@ -5,6 +5,12 @@
 :80 {
     encode zstd gzip
 
+    # Facebook calls this signed webhook. The adapter is isolated from the web app.
+    @facebook_webhook path /facebook/webhook
+    handle @facebook_webhook {
+        reverse_proxy friday-facebook:8781
+    }
+
     @api path /api/*
     handle @api {
         uri strip_prefix /api
