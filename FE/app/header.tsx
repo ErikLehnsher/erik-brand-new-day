@@ -6,10 +6,6 @@ import { clearSession, getSession, onSessionChange, SessionState } from "./sessi
 
 const guestNavItems = [
   { href: "/", label: "Home" },
-  { href: "/#daily", label: "Daily" },
-  { href: "/#odoo", label: "Odoo" },
-  { href: "/#technology", label: "Tech" },
-  { href: "/#video", label: "Video" },
   { href: "/about", label: "About" },
   { href: "/posts/new", label: "Write" },
   { href: "/login", label: "Login" },
@@ -18,18 +14,16 @@ const guestNavItems = [
 
 const memberNavItems = [
   { href: "/", label: "Home" },
-  { href: "/#daily", label: "Daily" },
-  { href: "/#odoo", label: "Odoo" },
-  { href: "/#technology", label: "Tech" },
-  { href: "/#video", label: "Video" },
   { href: "/about", label: "About" },
-  { href: "/friday", label: "Friday" }
+  { href: "/friday", label: "Friday" },
+  { href: "/studio/profile", label: "Studio" }
 ];
 
 export function Header() {
   const [session, setSessionState] = useState<SessionState | null>(null);
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const [profileHandle, setProfileHandle] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -37,6 +31,18 @@ export function Header() {
     sync();
     return onSessionChange(sync);
   }, []);
+
+  useEffect(() => {
+    if (!session) {
+      setProfileHandle(null);
+      return;
+    }
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+    fetch(`${apiBase}/studio/profile`, { headers: { Authorization: `Bearer ${session.accessToken}` } })
+      .then((response) => response.ok ? response.json() : null)
+      .then((profile: { handle?: string } | null) => setProfileHandle(profile?.handle ?? null))
+      .catch(() => setProfileHandle(null));
+  }, [session]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -85,6 +91,7 @@ export function Header() {
               {item.label}
             </a>
           ))}
+          {session && profileHandle ? <a href={`/${profileHandle}`} className="site-nav-link">Profile</a> : null}
           {session ? (
             <a href="/posts/new" className="site-nav-add" aria-label="Create new post">
               <span aria-hidden="true">+</span>
@@ -114,6 +121,8 @@ export function Header() {
                   <span>{session.user.email}</span>
                 </div>
                 <a href="/posts/new" role="menuitem">New post</a>
+                {profileHandle ? <a href={`/${profileHandle}`} role="menuitem">View profile</a> : null}
+                <a href="/studio/profile" role="menuitem">Profile studio</a>
                 <a href="/about" role="menuitem">About profile</a>
                 <button
                   type="button"
