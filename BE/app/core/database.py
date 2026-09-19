@@ -16,12 +16,13 @@ Base = declarative_base()
 def init_db() -> None:
     from app.models.post import Post
     from app.models.profile import Category, Collection, Profile
+    from app.models.friday_access import FridayAccess, FridayApiKey
     from app.models.reset_token import PasswordResetToken
     from app.models.review import Review
     from app.models.user import User
 
     Base.metadata.create_all(bind=engine)
-    _ = User, PasswordResetToken, Profile, Category, Collection, Post, Review
+    _ = User, PasswordResetToken, Profile, Category, Collection, Post, Review, FridayAccess, FridayApiKey
     # Keep the existing production table compatible when publication metadata
     # is introduced after the first deployment.
     existing_columns = {column["name"] for column in inspect(engine).get_columns("posts")}
