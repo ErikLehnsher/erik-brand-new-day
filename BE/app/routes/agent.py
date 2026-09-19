@@ -23,7 +23,7 @@ def key_response(key: FridayApiKey) -> FridayKeyResponse:
 
 
 def is_friday_admin(user: User) -> bool:
-    return user.email.lower() in get_settings().friday_admin_email_list
+    return user.is_admin
 
 
 def access_response(access: FridayAccess | None, keys: list[FridayApiKey], user: User) -> FridayAccessResponse:

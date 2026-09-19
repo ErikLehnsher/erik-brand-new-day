@@ -39,7 +39,19 @@ def init_db() -> None:
             if column not in existing_columns:
                 connection.execute(text(f"ALTER TABLE posts ADD COLUMN {column} {definition}"))
 
+    existing_user_columns = {column["name"] for column in inspect(engine).get_columns("users")}
+    if "is_admin" not in existing_user_columns:
+        with engine.begin() as connection:
+            connection.execute(text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT false"))
+
     with SessionLocal() as db:
+        # Bootstrap exactly one owner in the database. This is a one-time setup
+        # for a self-hosted install; normal users never need server/.env access.
+        if not db.scalar(select(User.id).where(User.is_admin.is_(True))):
+            first_user = db.scalar(select(User).order_by(User.created_at.asc()))
+            if first_user:
+                first_user.is_admin = True
+                db.commit()
         if db.scalar(select(Post.id)):
             return
         db.add_all(
