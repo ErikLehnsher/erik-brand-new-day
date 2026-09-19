@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatPublicationDate, getProfileBundle, type PublicPost } from "../publication-api";
+import { ProfileDecoButton } from "./profile-deco-button";
 
 function PostCard({ post, handle }: { post: PublicPost; handle: string }) {
   return <article className="profile-post-card">
@@ -22,7 +23,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ handle
     <section className="profile-hero">
       <div className="profile-avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt="" /> : initials}</div>
       <div className="profile-hero-copy"><p className="profile-handle">/{profile.handle}</p><h1>{profile.display_name}</h1><p>{profile.bio || "Một không gian để viết, lưu lại và chia sẻ những điều có ý nghĩa."}</p><div className="profile-stats"><span><strong>{posts.length}</strong> bài viết</span><span><strong>{categories.length}</strong> chuyên mục</span><span><strong>{collections.length}</strong> tuyển tập</span></div></div>
-      <Link className="profile-follow-link" href={`/posts/new?profile=${profile.handle}`}>Viết bài</Link>
+      <div className="profile-owner-actions"><ProfileDecoButton handle={profile.handle} /><Link className="profile-follow-link" href="/posts/new">Viết bài</Link></div>
     </section>
 
     <nav className="profile-category-nav" aria-label="Profile categories"><Link href={`/${profile.handle}/posts`}>Tất cả</Link>{categories.map((category) => <Link key={category.id} href={`/${profile.handle}/category/${category.slug}`}>{category.name}</Link>)}</nav>

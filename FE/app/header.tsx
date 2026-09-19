@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { clearSession, getSession, onSessionChange, SessionState } from "./session";
+import { getSession, onSessionChange, SessionState } from "./session";
 
 const guestNavItems = [
   { href: "/", label: "Home" },
@@ -15,8 +15,7 @@ const guestNavItems = [
 const memberNavItems = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/friday", label: "Friday" },
-  { href: "/studio/profile", label: "Studio" }
+  { href: "/friday", label: "Friday" }
 ];
 
 export function Header() {
@@ -91,7 +90,6 @@ export function Header() {
               {item.label}
             </a>
           ))}
-          {session && profileHandle ? <a href={`/${profileHandle}`} className="site-nav-link">Profile</a> : null}
           {session ? (
             <a href="/posts/new" className="site-nav-add" aria-label="Create new post">
               <span aria-hidden="true">+</span>
@@ -120,20 +118,7 @@ export function Header() {
                   <strong>{session.user.display_name}</strong>
                   <span>{session.user.email}</span>
                 </div>
-                <a href="/posts/new" role="menuitem">New post</a>
-                {profileHandle ? <a href={`/${profileHandle}`} role="menuitem">View profile</a> : null}
-                <a href="/studio/profile" role="menuitem">Profile studio</a>
-                <a href="/about" role="menuitem">About profile</a>
-                <button
-                  type="button"
-                  onClick={() => {
-                    clearSession();
-                    setOpen(false);
-                    window.location.href = "/";
-                  }}
-                >
-                  Logout
-                </button>
+                {profileHandle ? <a href={`/${profileHandle}`} role="menuitem">Trang cá nhân</a> : null}
               </div>
             ) : null}
           </div>
