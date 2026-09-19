@@ -16,10 +16,15 @@ class Settings(BaseSettings):
     friday_bridge_url: str = ""
     friday_bridge_token: str = ""
     friday_bridge_timeout_seconds: int = 300
+    friday_admin_emails: str = ""
 
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @property
+    def friday_admin_email_list(self) -> set[str]:
+        return {email.strip().lower() for email in self.friday_admin_emails.split(",") if email.strip()}
 
     @property
     def is_dev(self) -> bool:

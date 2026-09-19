@@ -27,4 +27,21 @@ class FridayAccessResponse(BaseModel):
     requested_at: datetime | None
     approved_at: datetime | None
     admin_note: str | None
+    is_admin: bool = False
     keys: list[FridayKeyResponse]
+
+
+class FridayAdminAccessResponse(BaseModel):
+    user_id: str
+    email: str
+    status: str
+    hourly_limit_minutes: int
+    requested_at: datetime
+    approved_at: datetime | None
+    admin_note: str | None
+
+
+class FridayAdminDecisionRequest(BaseModel):
+    status: str = Field(pattern=r"^(approved|revoked)$")
+    hourly_limit_minutes: int = Field(default=30, ge=1, le=60)
+    admin_note: str | None = Field(default=None, max_length=500)
