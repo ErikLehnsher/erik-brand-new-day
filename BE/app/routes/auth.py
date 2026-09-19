@@ -35,7 +35,7 @@ async def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> A
     existing_user = db.scalar(select(User).where(User.email == payload.email.lower()))
     if existing_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered. Please sign in instead.")
-    user = User(email=payload.email.lower(), is_admin=not bool(db.scalar(select(User.id).limit(1))))
+    user = User(email=payload.email.lower())
     from app.core.security import hash_password
 
     user.password_hash = hash_password(payload.password)
@@ -63,7 +63,7 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)) -> AuthRes
 async def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)) -> AuthResponse:
     user = db.scalar(select(User).where(User.email == payload.email.lower()))
     if user is None:
-        user = User(email=payload.email.lower(), google_sub=payload.google_sub, is_admin=not bool(db.scalar(select(User.id).limit(1))))
+        user = User(email=payload.email.lower(), google_sub=payload.google_sub)
         db.add(user)
     else:
         user.google_sub = payload.google_sub

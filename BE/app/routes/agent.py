@@ -1,6 +1,5 @@
 import hashlib
 import secrets
-from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -12,7 +11,7 @@ from app.core.dependencies import get_current_user, get_db
 from app.models.friday_access import FridayAccess, FridayApiKey
 from app.models.user import User
 from app.schemas.agent import AgentChatRequest, AgentChatResponse
-from app.schemas.friday_access import FridayAccessResponse, FridayAdminAccessResponse, FridayAdminDecisionRequest, FridayKeyCreatedResponse, FridayKeyRequest, FridayKeyResponse
+from app.schemas.friday_access import FridayAccessResponse, FridayKeyCreatedResponse, FridayKeyRequest, FridayKeyResponse
 
 
 router = APIRouter(prefix="/agent", tags=["agent"])
@@ -22,11 +21,7 @@ def key_response(key: FridayApiKey) -> FridayKeyResponse:
     return FridayKeyResponse(id=key.id, label=key.label, prefix=key.prefix, status=key.status, created_at=key.created_at, last_used_at=key.last_used_at)
 
 
-def is_friday_admin(user: User) -> bool:
-    return user.is_admin
-
-
-def access_response(access: FridayAccess | None, keys: list[FridayApiKey], user: User) -> FridayAccessResponse:
+def access_response(access: FridayAccess | None, keys: list[FridayApiKey]) -> FridayAccessResponse:
     return FridayAccessResponse(
         status=access.status if access else None,
         hourly_limit_minutes=access.hourly_limit_minutes if access else None,
@@ -34,7 +29,6 @@ def access_response(access: FridayAccess | None, keys: list[FridayApiKey], user:
         requested_at=access.requested_at if access else None,
         approved_at=access.approved_at if access else None,
         admin_note=access.admin_note if access else None,
-        is_admin=is_friday_admin(user),
         keys=[key_response(key) for key in keys],
     )
 
@@ -43,7 +37,7 @@ def access_response(access: FridayAccess | None, keys: list[FridayApiKey], user:
 def get_friday_access(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> FridayAccessResponse:
     access = db.scalar(select(FridayAccess).where(FridayAccess.user_id == user.id))
     keys = db.scalars(select(FridayApiKey).where(FridayApiKey.user_id == user.id).order_by(FridayApiKey.created_at.desc())).all()
-    return access_response(access, list(keys), user)
+    return access_response(access, list(keys))
 
 
 @router.post("/access/request", response_model=FridayAccessResponse)
@@ -55,31 +49,7 @@ def request_friday_access(user: User = Depends(get_current_user), db: Session = 
         db.commit()
         db.refresh(access)
     keys = db.scalars(select(FridayApiKey).where(FridayApiKey.user_id == user.id).order_by(FridayApiKey.created_at.desc())).all()
-    return access_response(access, list(keys), user)
-
-
-@router.get("/admin/access", response_model=list[FridayAdminAccessResponse])
-def list_friday_access_requests(user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> list[FridayAdminAccessResponse]:
-    if not is_friday_admin(user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Friday admin access required.")
-    rows = db.execute(select(FridayAccess, User.email).join(User, User.id == FridayAccess.user_id).order_by(FridayAccess.requested_at.desc())).all()
-    return [FridayAdminAccessResponse(user_id=access.user_id, email=email, status=access.status, hourly_limit_minutes=access.hourly_limit_minutes, requested_at=access.requested_at, approved_at=access.approved_at, admin_note=access.admin_note) for access, email in rows]
-
-
-@router.put("/admin/access/{target_user_id}", response_model=FridayAdminAccessResponse)
-def decide_friday_access(target_user_id: str, payload: FridayAdminDecisionRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> FridayAdminAccessResponse:
-    if not is_friday_admin(user):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Friday admin access required.")
-    access = db.scalar(select(FridayAccess).where(FridayAccess.user_id == target_user_id))
-    target = db.get(User, target_user_id)
-    if not access or not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Friday access request not found.")
-    access.status = payload.status
-    access.hourly_limit_minutes = payload.hourly_limit_minutes
-    access.admin_note = payload.admin_note.strip() if payload.admin_note else None
-    access.approved_at = datetime.now(timezone.utc) if payload.status == "approved" else None
-    db.commit(); db.refresh(access)
-    return FridayAdminAccessResponse(user_id=access.user_id, email=target.email, status=access.status, hourly_limit_minutes=access.hourly_limit_minutes, requested_at=access.requested_at, approved_at=access.approved_at, admin_note=access.admin_note)
+    return access_response(access, list(keys))
 
 
 @router.post("/keys", response_model=FridayKeyCreatedResponse, status_code=status.HTTP_201_CREATED)
