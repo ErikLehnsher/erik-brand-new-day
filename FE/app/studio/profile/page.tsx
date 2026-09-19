@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { getSession } from "../../session";
 
 type ProfileForm = {
@@ -23,10 +23,16 @@ export default function ProfileStudioPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
-
-  const session = useMemo(() => getSession(), []);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [session, setSession] = useState<ReturnType<typeof getSession>>(null);
 
   useEffect(() => {
+    setSession(getSession());
+    setSessionReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sessionReady) return;
     if (!session) return;
     const headers = { Authorization: `Bearer ${session.accessToken}` };
     Promise.all([
@@ -46,7 +52,7 @@ export default function ProfileStudioPage() {
       });
       setThemes(themeData.themes ?? []);
     }).catch((reason: Error) => setError(reason.message));
-  }, [session]);
+  }, [session, sessionReady]);
 
   function change(field: keyof ProfileForm, value: string) {
     setForm((current) => current ? { ...current, [field]: value } : current);
@@ -88,6 +94,7 @@ export default function ProfileStudioPage() {
     }
   }
 
+  if (!sessionReady) return <main className="studio-page"><p className="studio-loading">Đang chuẩn bị studio…</p></main>;
   if (!session) return <main className="studio-page"><section className="studio-login"><p>Profile studio</p><h1>Đăng nhập để chỉnh không gian của bạn.</h1><Link href="/login">Đăng nhập →</Link></section></main>;
   if (!form) return <main className="studio-page"><p className="studio-loading">{error || "Đang tải profile…"}</p></main>;
 
