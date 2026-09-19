@@ -1,9 +1,16 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
+
+    @field_validator("password")
+    @classmethod
+    def password_has_letters_and_numbers(cls, value: str) -> str:
+        if not any(character.isalpha() for character in value) or not any(character.isdigit() for character in value):
+            raise ValueError("Password must include at least one letter and one number")
+        return value
 
 
 class LoginRequest(BaseModel):

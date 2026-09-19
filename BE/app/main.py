@@ -6,6 +6,7 @@ from app.core.config import get_settings
 from app.routes.agent import router as agent_router
 from app.routes.auth import router as auth_router
 from app.routes.posts import router as posts_router
+from app.routes.publication import public_router as profiles_router, studio_router
 from app.routes.reviews import router as reviews_router
 
 settings = get_settings()
@@ -21,6 +22,8 @@ app.include_router(auth_router)
 app.include_router(agent_router)
 app.include_router(posts_router)
 app.include_router(reviews_router)
+app.include_router(profiles_router)
+app.include_router(studio_router)
 
 
 @app.on_event("startup")

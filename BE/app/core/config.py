@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     secret_key: str = "change-me-in-production"
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001"
     friday_bridge_url: str = ""
     friday_bridge_token: str = ""
     friday_bridge_timeout_seconds: int = 300

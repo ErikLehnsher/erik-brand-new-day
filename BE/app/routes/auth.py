@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.dependencies import get_db
 from app.core.email import ConsoleEmailSender, EmailMessage
-from app.core.database import Base
+from app.domains.publication.service import ensure_profile
 from app.core.security import create_access_token, create_reset_token
 from app.models.reset_token import PasswordResetToken
 from app.models.user import User
@@ -34,14 +34,16 @@ def serialize_user(user: User) -> AuthUser:
 async def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> AuthResponse:
     existing_user = db.scalar(select(User).where(User.email == payload.email.lower()))
     if existing_user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
-    user = User(email=payload.email.lower(), password_hash=payload.password)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered. Please sign in instead.")
+    user = User(email=payload.email.lower())
     from app.core.security import hash_password
 
     user.password_hash = hash_password(payload.password)
     db.add(user)
     db.commit()
     db.refresh(user)
+    ensure_profile(db, user)
+    db.commit()
     return AuthResponse(access_token=create_access_token(user.id), user=serialize_user(user))
 
 
@@ -51,7 +53,9 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)) -> AuthRes
     from app.core.security import verify_password
 
     if not user or not user.password_hash or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email or password is incorrect")
+    ensure_profile(db, user)
+    db.commit()
     return AuthResponse(access_token=create_access_token(user.id), user=serialize_user(user))
 
 
@@ -65,6 +69,8 @@ async def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db
         user.google_sub = payload.google_sub
     db.commit()
     db.refresh(user)
+    ensure_profile(db, user)
+    db.commit()
     return AuthResponse(access_token=create_access_token(user.id), user=serialize_user(user))
 
 
