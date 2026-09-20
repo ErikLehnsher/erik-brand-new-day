@@ -14,7 +14,7 @@ The platform must provide:
 4. **Theme inheritance**: profile default → optional category style → optional post style. A post may inherit its profile theme or deliberately use a compatible sub-variant.
 5. **Responsive parity**: desktop and mobile are distinct art-directed layouts, not merely a squeezed desktop page.
 
-The first complete theme is **Ghibli Journal**. It must be built as a reusable theme system, not one hard-coded page.
+**Ghibli Journal is on hold** because the intended visual references may introduce unnecessary copyright risk. The first complete theme is now **Tech Workspace / IDE Journal**, documented in `PROFILE_THEME_TECH_WORKSPACE.md`. The underlying theme system remains reusable rather than one hard-coded page.
 
 ## 2. Core interaction model
 
@@ -99,7 +99,9 @@ BE/
     service.py
 ```
 
-## 4. First default theme: Ghibli Journal
+## 4. Paused theme: Ghibli Journal
+
+This section remains as an archived asset and interaction reference only. It is not approved for implementation or asset collection until all artwork is verified as original/licensed.
 
 ### Mood and rules
 
