@@ -408,3 +408,13 @@ For every image provide, where possible:
 - Decorations never hide body text, controls or media captions.
 - Page-turn and note effects are optional, accessible and reduced-motion safe.
 - Every asset is product-owned/licensed/original and registered in a manifest.
+
+## 10. Asset intake workflow (approved)
+
+- The owner may send assets gradually, in any practical batch size.
+- Each received asset is inspected, classified, renamed and stored by the implementation team; the owner does not need to pre-sort every file perfectly.
+- Canonical storage is `FE/public/themes/ghibli-journal/` using the folder structure in section 8.
+- Each asset is recorded in the theme manifest with: stable asset ID, filename, group, intended placement, dimensions, format, decorative/content status and source/licence note.
+- Images are resized and converted to suitable web formats where needed; source originals are preserved whenever available.
+- Desktop is the first art direction target. Desktop layout, quality and asset placement must be finalised before deliberate mobile variants are produced.
+- Mobile web and a future app experience are later phases. Do not force mobile crops or compromise desktop composition during the first Ghibli Journal build.
