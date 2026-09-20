@@ -68,6 +68,7 @@
 - The header brand mark now uses larger cutout cat and dog images instead of the previous blend SVG mascot.
 - Auth buttons now use the mascot cutouts as small icon badges so the visual system stays consistent across the app.
 - When the implementation changes, the working summary should be updated in this `.md` file so the current state stays visible in one place.
+- Profile themes are a major product direction. Each `/{handle}` profile is a mini-site with a curated default theme, fixed product assets and safe owner customisation through `Deco`. The canonical requirements and first-theme asset brief are maintained in `PROFILE_THEME_SYSTEM.md`.
 
 ## Product vision
 
