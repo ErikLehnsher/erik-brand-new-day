@@ -11,6 +11,15 @@
         reverse_proxy friday-facebook:8781
     }
 
+    # Friday's operator console is protected by the dashboard's own Basic Auth.
+    # Keep the trailing slash so relative API requests stay under this prefix.
+    @friday_admin_root path /friday-admin
+    redir @friday_admin_root /friday-admin/ 308
+
+    handle_path /friday-admin/* {
+        reverse_proxy friday-admin:8765
+    }
+
     @api path /api/*
     handle @api {
         uri strip_prefix /api

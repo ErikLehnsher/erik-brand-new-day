@@ -28,6 +28,11 @@ Friday Agent is a separate private service on the same server.
 It is not proxied publicly and has no website API contract yet.
 ```
 
+The protected Friday operator console is available at
+`https://snakersdoo.io.vn/friday-admin/`. The `friday-admin` service must have
+both `ADMIN_USER` and `ADMIN_PASSWORD` configured; Caddy only provides the
+path-based reverse proxy and does not make an unauthenticated dashboard safe.
+
 ## Local setup
 
 Edit `.env.local` directly for local development.
